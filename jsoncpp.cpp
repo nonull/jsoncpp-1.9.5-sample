@@ -4391,6 +4391,14 @@ String valueToQuotedString(const char *value) {
   return valueToQuotedStringN(value, strlen(value));
 }
 
+String valueToQuotedStringByFlag(String const &value_str, bool flag) {
+  if (flag) {
+    return valueToQuotedString(value_str.data());
+  } else {
+    return value_str;
+  }
+}
+
 // Class Writer
 // //////////////////////////////////////////////////////////////////
 Writer::~Writer() = default;
@@ -4982,14 +4990,14 @@ void BuiltStyledStreamWriter::writeValue(Value const &value) {
     pushValue(nullSymbol_);
     break;
   case intValue:
-    pushValue(valueToString(value.asLargestInt()));
+    pushValue(valueToQuotedStringByFlag(valueToString(value.asLargestInt()), true));
     break;
   case uintValue:
-    pushValue(valueToString(value.asLargestUInt()));
+    pushValue(valueToQuotedStringByFlag(valueToString(value.asLargestUInt()), true));
     break;
   case realValue:
-    pushValue(valueToString(value.asDouble(), useSpecialFloats_, precision_,
-                            precisionType_));
+    pushValue(valueToQuotedStringByFlag(valueToString(value.asDouble(), useSpecialFloats_, precision_,
+                            precisionType_), true));
     break;
   case stringValue: {
     // Is NULL is possible for value.string_? No.
@@ -5004,7 +5012,7 @@ void BuiltStyledStreamWriter::writeValue(Value const &value) {
     break;
   }
   case booleanValue:
-    pushValue(valueToString(value.asBool()));
+    pushValue(valueToQuotedStringByFlag(valueToString(value.asBool()), true));
     break;
   case arrayValue:
     writeArrayValue(value);
@@ -5219,8 +5227,10 @@ StreamWriter *StreamWriterBuilder::newStreamWriter() const {
     precisionType = PrecisionType::significantDigits;
   } else if (pt_str == "decimal") {
     precisionType = PrecisionType::decimalPlaces;
+  } else if (pt_str == "zdecimal") {
+    precisionType = PrecisionType::zeroPaddingDecimalPlaces;
   } else {
-    throwRuntimeError("precisionType must be 'significant' or 'decimal'");
+    throwRuntimeError("precisionType must be 'significant', 'decimal' or 'zdecimal'");
   }
   String colonSymbol = " : ";
   if (eyc) {
@@ -5270,13 +5280,13 @@ Value &StreamWriterBuilder::operator[](const String &key) {
 void StreamWriterBuilder::setDefaults(Json::Value *settings) {
   //! [StreamWriterBuilderDefaults]
   (*settings)["commentStyle"] = "All";
-  (*settings)["indentation"] = "\t";
+  (*settings)["indentation"] = "";
   (*settings)["enableYAMLCompatibility"] = false;
   (*settings)["dropNullPlaceholders"] = false;
   (*settings)["useSpecialFloats"] = false;
   (*settings)["emitUTF8"] = false;
-  (*settings)["precision"] = 17;
-  (*settings)["precisionType"] = "significant";
+  (*settings)["precision"] = 6;
+  (*settings)["precisionType"] = "zdecimal";
   //! [StreamWriterBuilderDefaults]
 }
 

@@ -651,7 +651,8 @@ enum CommentPlacement {
  */
 enum PrecisionType {
   significantDigits = 0, ///< we set max number of significant digits in string
-  decimalPlaces          ///< we set max number of digits after "." in string
+  decimalPlaces,          ///< we set max number of digits after "." in string
+  zeroPaddingDecimalPlaces
 };
 
 /** \brief Lightweight wrapper to tag static string.
